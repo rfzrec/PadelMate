@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Booking Court - PadelMate
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body data-auth-required="true">
+
+
+    <!-- ========================================
+         NAVBAR
+    ========================================= -->
+
+    <header class="navbar">
+
+        <div class="logo">
+            Padel<span>Mate</span>
+        </div>
+
+
+        <nav>
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="index.html#courts">
+                Courts
+            </a>
+
+            <a href="index.html#matches">
+                Open Match
+            </a>
+
+        </nav>
+
+
+        <button class="login-btn">
+            Login
+        </button>
+
+    </header>
+
+
+
+    <!-- ========================================
+         BOOKING SECTION
+    ========================================= -->
+
+    <main class="booking-page">
+
+
+        <div class="booking-header">
+
+            <p class="section-label">
+                RESERVE YOUR COURT
+            </p>
+
+
+            <h1>
+                Book Your Court
+            </h1>
+
+
+            <p>
+                Pilih lapangan, tanggal, dan waktu bermain.
+            </p>
+
+        </div>
+
+
+
+        <div class="booking-container">
+
+
+            <!-- ========================================
+                 BOOKING FORM
+            ========================================= -->
+
+            <div class="booking-form-card">
+
+                <h2>
+                    Booking Details
+                </h2>
+
+
+
+                <!-- COURT -->
+
+                <div class="form-group">
+
+                    <label for="court">
+                        Pilih Court
+                    </label>
+
+
+                    <select
+                        id="court"
+                        required
+                    >
+
+                        <option value="">
+                            Memuat court...
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <!-- DATE -->
+
+                <div class="form-group">
+
+                    <label for="booking-date">
+                        Tanggal
+                    </label>
+
+
+                    <input
+                        type="date"
+                        id="booking-date"
+                        required
+                    >
+
+                </div>
+
+
+
+                <!-- TIME -->
+
+                <div class="time-row">
+
+
+                    <div class="form-group">
+
+                        <label for="start-time">
+                            Jam Mulai
+                        </label>
+
+
+                        <input
+                            type="time"
+                            id="start-time"
+                            required
+                        >
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="end-time">
+                            Jam Selesai
+                        </label>
+
+
+                        <input
+                            type="time"
+                            id="end-time"
+                            required
+                        >
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- ========================================
+                     PRICE
+                ========================================= -->
+
+                <div class="price-box">
+
+
+                    <div>
+
+                        <span>
+                            Harga per jam
+                        </span>
+
+
+                        <strong
+                            id="price-per-hour"
+                        >
+                            Rp0
+                        </strong>
+
+                    </div>
+
+
+
+                    <div>
+
+                        <span>
+                            Durasi
+                        </span>
+
+
+                        <strong
+                            id="duration"
+                        >
+                            0 jam
+                        </strong>
+
+                    </div>
+
+
+
+                    <div class="total-price">
+
+                        <span>
+                            Total
+                        </span>
+
+
+                        <strong
+                            id="total-price"
+                        >
+                            Rp0
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- ========================================
+                     BUTTON
+                ========================================= -->
+
+                <button
+                    type="button"
+                    id="confirm-booking"
+                    class="confirm-btn"
+                >
+                    Confirm Booking
+                </button>
+
+
+
+                <!-- ========================================
+                     MESSAGE
+                ========================================= -->
+
+                <div
+                    id="booking-message"
+                    class="booking-message"
+                ></div>
+
+
+            </div>
+
+
+
+            <!-- ========================================
+                 INFORMATION
+            ========================================= -->
+
+            <div class="booking-info">
+
+
+                <div class="info-card">
+
+                    <h3>
+                        PadelMate Booking
+                    </h3>
+
+
+                    <p>
+                        Pesan lapangan padel dengan mudah
+                        dan temukan waktu bermain yang sesuai.
+                    </p>
+
+                </div>
+
+
+
+                <div class="info-card">
+
+                    <h3>
+                        Open Match
+                    </h3>
+
+
+                    <p>
+                        Setelah melakukan booking, kamu
+                        dapat membuat Open Match dan
+                        mengajak pemain lain bergabung.
+                    </p>
+
+                </div>
+
+
+
+                <div class="info-card">
+
+                    <h3>
+                        Split Payment
+                    </h3>
+
+
+                    <p>
+                        Biaya lapangan dapat dibagi
+                        berdasarkan jumlah pemain
+                        dalam Open Match.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+
+
+    <!-- ========================================
+         FOOTER
+    ========================================= -->
+
+    <footer>
+
+        <div class="logo">
+            Padel<span>Mate</span>
+        </div>
+
+
+        <p>
+            © 2026 PadelMate. Padel booking made simple.
+        </p>
+
+    </footer>
+
+
+
+    <!-- ========================================
+         JAVASCRIPT
+    ========================================= -->
+
+    <script src="js/auth.js"></script>
+    <script src="js/booking.js"></script>
+
+
+</body>
+
+</html>

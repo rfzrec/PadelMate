@@ -1,0 +1,124 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    container_name: padelmate-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/frontend
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:3004
+      COURT_SERVICE_URL: http://court-service:3001
+      BOOKING_SERVICE_URL: http://booking-service:3002
+      MATCH_SERVICE_URL: http://match-service:3003
+    depends_on:
+      - auth-service
+      - court-service
+      - booking-service
+      - match-service
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    container_name: padelmate-auth
+    restart: unless-stopped
+    environment:
+      PORT: 3004
+      AUTH_SECRET: ${AUTH_SECRET:-padelmate-dev-secret-2026}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: padeluser
+      DB_PASSWORD: padelpassword
+      DB_NAME: padelmate
+    depends_on:
+      db:
+        condition: service_healthy
+
+  court-service:
+    build:
+      context: ./services/court-service
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    container_name: padelmate-court
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      AUTH_SECRET: ${AUTH_SECRET:-padelmate-dev-secret-2026}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: padeluser
+      DB_PASSWORD: padelpassword
+      DB_NAME: padelmate
+    depends_on:
+      db:
+        condition: service_healthy
+
+  booking-service:
+    build:
+      context: ./services/booking-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    container_name: padelmate-booking
+    restart: unless-stopped
+    environment:
+      PORT: 3002
+      AUTH_SECRET: ${AUTH_SECRET:-padelmate-dev-secret-2026}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: padeluser
+      DB_PASSWORD: padelpassword
+      DB_NAME: padelmate
+    depends_on:
+      db:
+        condition: service_healthy
+
+  match-service:
+    build:
+      context: ./services/match-service
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    container_name: padelmate-match
+    restart: unless-stopped
+    environment:
+      PORT: 3003
+      AUTH_SECRET: ${AUTH_SECRET:-padelmate-dev-secret-2026}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: padeluser
+      DB_PASSWORD: padelpassword
+      DB_NAME: padelmate
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    container_name: padelmate-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: padelmate
+      MYSQL_USER: padeluser
+      MYSQL_PASSWORD: padelpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database_init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -prootpassword --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql_data:

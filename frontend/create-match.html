@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Open Match - PadelMate</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body data-auth-required="true">
+
+    <nav class="navbar">
+
+        <div class="logo">
+            PadelMate
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#courts">Courts</a>
+            <a href="index.html#matches">Open Match</a>
+            <a href="booking-history.html">My Bookings</a>
+        </div>
+
+    </nav>
+
+
+    <main class="booking-page">
+
+        <div class="booking-container">
+
+            <div class="booking-form-card">
+
+                <h1>Create Open Match</h1>
+
+                <p class="booking-subtitle">
+                    Ajak pemain lain untuk bergabung dalam pertandingan padel kamu.
+                </p>
+
+
+                <div class="form-group">
+
+                    <label for="booking">
+                        Pilih Booking
+                    </label>
+
+                    <select id="booking">
+
+                        <option value="">
+                            -- Pilih Booking --
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="match-title">
+                        Nama Match
+                    </label>
+
+                    <input
+                        type="text"
+                        id="match-title"
+                        placeholder="Contoh: Padel Fun Match"
+                        maxlength="150"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="max-players">
+                        Maksimal Pemain
+                    </label>
+
+                    <select id="max-players">
+
+                        <option value="2">
+                            2 Pemain
+                        </option>
+
+                        <option value="3">
+                            3 Pemain
+                        </option>
+
+                        <option value="4" selected>
+                            4 Pemain
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div id="booking-detail" class="booking-detail">
+
+                    <p>
+                        Pilih booking untuk melihat detail.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="create-match-btn"
+                    class="confirm-btn"
+                >
+                    Create Open Match
+                </button>
+
+
+                <div
+                    id="match-message"
+                    class="booking-message"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <footer class="footer">
+
+        <p>
+            © 2026 PadelMate. Padel Booking System.
+        </p>
+
+    </footer>
+
+
+    <script src="js/auth.js"></script>
+<script src="js/create-match.js"></script>
+
+</body>
+
+</html>
