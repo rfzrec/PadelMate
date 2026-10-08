@@ -81,13 +81,6 @@ docker compose up --build
 
 **Perhatian:** `down -v` menghapus data MySQL pada volume Docker.
 
-## Akun seed
-
-- admin@padelmate.com / admin123
-- eka@padelmate.com / eka123
-- budi@padelmate.com / budi123
-- andi@padelmate.com / andi123
-
 ## Struktur
 
 ```text
