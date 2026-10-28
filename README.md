@@ -99,3 +99,8 @@ PadelMate/
 ├── docker-compose.yml
 └── README.md
 ```
+
+
+## Varian Base Tanpa Kalender
+
+Paket ini disiapkan untuk demonstrasi penerapan fitur kalender melalui perubahan terpisah. Form tanggal dan input jam manual tetap tersedia. Endpoint khusus ketersediaan kalender di booking-service juga dihapus dari varian ini.
