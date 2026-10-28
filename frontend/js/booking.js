@@ -9,6 +9,9 @@ const courtSelect = document.getElementById("court");
 const bookingDate = document.getElementById("booking-date");
 const startTime = document.getElementById("start-time");
 const endTime = document.getElementById("end-time");
+const availabilityCalendar = document.getElementById("availability-calendar");
+const availabilityMessage = document.getElementById("availability-message");
+const availabilityDateLabel = document.getElementById("availability-date-label");
 
 const pricePerHourElement =
     document.getElementById("price-per-hour");
@@ -181,6 +184,7 @@ async function loadCourts() {
         console.log(
             "Court berhasil dimasukkan ke dropdown."
         );
+        loadWeekAvailability();
 
     } catch (error) {
 
@@ -208,6 +212,192 @@ async function loadCourts() {
 
 
 // ========================================
+// KALENDER KETERSEDIAAN LAPANGAN — TAMPILAN MINGGUAN
+let weekBookings = [];
+let selectedAvailabilitySlot = "";
+let weekAvailabilityRequestId = 0;
+let displayedWeekStart = "";
+
+const monthCalendarGrid = document.getElementById("availability-month-grid");
+const monthCalendarTitle = document.getElementById("availability-month-title");
+const previousMonthButton = document.getElementById("availability-prev-month");
+const nextMonthButton = document.getElementById("availability-next-month");
+const todayButton = document.getElementById("availability-today");
+
+function localDateString(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+function parseLocalDate(value) {
+    return new Date(`${value}T00:00:00`);
+}
+function formatAvailabilityDate(value, options = { day: "numeric", month: "short", year: "numeric" }) {
+    if (!value) return "Pilih tanggal";
+    return new Intl.DateTimeFormat("id-ID", options).format(parseLocalDate(value));
+}
+function timeToMinutes(value) {
+    if (!value) return 0;
+    const parts = String(value).slice(0, 5).split(":").map(Number);
+    return (parts[0] * 60) + parts[1];
+}
+function normalizeBookingDate(value) {
+    if (!value) return "";
+    if (value instanceof Date) return localDateString(value);
+    return String(value).slice(0, 10);
+}
+function showAvailabilityMessage(message = "", type = "") {
+    if (!availabilityMessage) return;
+    availabilityMessage.textContent = message;
+    availabilityMessage.className = `availability-message${type ? ` ${type}` : ""}`;
+}
+function startOfWeek(date) {
+    const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const weekday = (result.getDay() + 6) % 7; // Senin sebagai hari pertama
+    result.setDate(result.getDate() - weekday);
+    return result;
+}
+function bookingsForDate(date) {
+    return weekBookings.filter(booking => normalizeBookingDate(booking.booking_date) === date);
+}
+function getWeekDate(offset) {
+    const date = parseLocalDate(displayedWeekStart);
+    date.setDate(date.getDate() + offset);
+    return localDateString(date);
+}
+async function loadWeekAvailability() {
+    if (!monthCalendarGrid) return;
+    const courtId = courtSelect.value;
+    if (!displayedWeekStart) {
+        const anchor = bookingDate.value ? parseLocalDate(bookingDate.value) : new Date();
+        displayedWeekStart = localDateString(startOfWeek(anchor));
+    }
+    const requestId = ++weekAvailabilityRequestId;
+    const lastDate = getWeekDate(6);
+    const firstMonth = formatAvailabilityDate(displayedWeekStart, { month: "long", year: "numeric" });
+    const lastMonth = formatAvailabilityDate(lastDate, { month: "long", year: "numeric" });
+    monthCalendarTitle.textContent = firstMonth === lastMonth ? firstMonth : `${firstMonth} – ${lastMonth}`;
+
+    if (!courtId) {
+        weekBookings = [];
+        renderWeekCalendar();
+        monthCalendarGrid.innerHTML = '<p class="availability-placeholder">Pilih court terlebih dahulu untuk melihat slot.</p>';
+        return;
+    }
+
+    monthCalendarGrid.innerHTML = '<p class="availability-placeholder">Memuat jadwal ketersediaan…</p>';
+    try {
+        const response = await fetch(`${API_URL}/api/bookings/week-availability?court_id=${encodeURIComponent(courtId)}&start_date=${encodeURIComponent(displayedWeekStart)}`);
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || "Gagal memuat jadwal.");
+        if (requestId !== weekAvailabilityRequestId) return;
+        weekBookings = Array.isArray(result.bookings) ? result.bookings : [];
+        renderWeekCalendar();
+    } catch (error) {
+        if (requestId !== weekAvailabilityRequestId) return;
+        console.error("Gagal memuat jadwal mingguan:", error);
+        monthCalendarGrid.innerHTML = '<p class="availability-placeholder">Jadwal tidak dapat dimuat. Periksa koneksi backend.</p>';
+    }
+}
+function renderWeekCalendar() {
+    if (!monthCalendarGrid || !displayedWeekStart) return;
+    monthCalendarGrid.innerHTML = "";
+    const fragment = document.createDocumentFragment();
+    const timeHead = document.createElement("div");
+    timeHead.className = "week-time-head";
+    timeHead.textContent = "Jam";
+    fragment.appendChild(timeHead);
+
+    const today = localDateString(new Date());
+    const selectedDate = bookingDate.value;
+    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+        const date = getWeekDate(dayIndex);
+        const dayDate = parseLocalDate(date);
+        const header = document.createElement("button");
+        header.type = "button";
+        header.className = `week-day-head${date === selectedDate ? " selected" : ""}${date === today ? " today" : ""}`;
+        header.disabled = date < today;
+        header.setAttribute("aria-pressed", date === selectedDate ? "true" : "false");
+        header.innerHTML = `<span class="week-day-name">${new Intl.DateTimeFormat("id-ID", { weekday: "short" }).format(dayDate)}</span><strong>${dayDate.getDate()}</strong><small>${new Intl.DateTimeFormat("id-ID", { month: "short" }).format(dayDate)}</small>`;
+        header.addEventListener("click", () => selectCalendarDate(date));
+        fragment.appendChild(header);
+    }
+
+    for (let hour = 8; hour < 22; hour++) {
+        const timeLabel = document.createElement("div");
+        timeLabel.className = "week-time-label";
+        timeLabel.textContent = `${String(hour).padStart(2, "0")}:00`;
+        fragment.appendChild(timeLabel);
+
+        for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+            const date = getWeekDate(dayIndex);
+            const start = `${String(hour).padStart(2, "0")}:00`;
+            const end = `${String(hour + 1).padStart(2, "0")}:00`;
+            const isPast = date < today;
+            const conflict = bookingsForDate(date).some(booking =>
+                booking.status !== "cancelled" &&
+                timeToMinutes(booking.start_time) < (hour + 1) * 60 &&
+                timeToMinutes(booking.end_time) > hour * 60
+            );
+            const slot = document.createElement("button");
+            slot.type = "button";
+            slot.className = `week-slot ${conflict ? "booked" : "available"}${date === selectedDate && selectedAvailabilitySlot === start ? " selected" : ""}`;
+            slot.disabled = isPast || conflict;
+            slot.title = `${formatAvailabilityDate(date)} · ${start}–${end} · ${conflict ? "Sudah dibooking" : "Tersedia"}`;
+            slot.setAttribute("aria-label", slot.title);
+            slot.innerHTML = `<span>${conflict ? "Terisi" : "Tersedia"}</span>`;
+            if (!conflict && !isPast) {
+                slot.addEventListener("click", () => {
+                    bookingDate.value = date;
+                    selectedAvailabilitySlot = start;
+                    startTime.value = start;
+                    endTime.value = end;
+                    renderWeekCalendar();
+                    calculatePrice();
+                    clearMessage();
+                    showAvailabilityMessage(`Slot ${formatAvailabilityDate(date)} pukul ${start}–${end} dipilih.`);
+                });
+            }
+            fragment.appendChild(slot);
+        }
+    }
+    monthCalendarGrid.appendChild(fragment);
+}
+function selectCalendarDate(date) {
+    bookingDate.value = date;
+    selectedAvailabilitySlot = "";
+    startTime.value = "";
+    endTime.value = "";
+    if (date < localDateString(new Date())) return;
+    const monday = localDateString(startOfWeek(parseLocalDate(date)));
+    if (monday !== displayedWeekStart) {
+        displayedWeekStart = monday;
+        loadWeekAvailability();
+    } else {
+        renderWeekCalendar();
+    }
+    calculatePrice();
+    clearMessage();
+}
+previousMonthButton?.addEventListener("click", () => {
+    const date = parseLocalDate(displayedWeekStart);
+    date.setDate(date.getDate() - 7);
+    displayedWeekStart = localDateString(date);
+    loadWeekAvailability();
+});
+nextMonthButton?.addEventListener("click", () => {
+    const date = parseLocalDate(displayedWeekStart);
+    date.setDate(date.getDate() + 7);
+    displayedWeekStart = localDateString(date);
+    loadWeekAvailability();
+});
+todayButton?.addEventListener("click", () => {
+    const today = localDateString(new Date());
+    bookingDate.value = today;
+    displayedWeekStart = localDateString(startOfWeek(parseLocalDate(today)));
+    selectedAvailabilitySlot = "";
+    loadWeekAvailability();
+    calculatePrice();
+});
+
 // COURT CHANGE
 // ========================================
 
@@ -232,6 +422,8 @@ courtSelect.addEventListener(
                 "Rp0";
 
             calculatePrice();
+            loadWeekAvailability();
+            loadWeekAvailability();
 
             return;
         }
@@ -244,6 +436,7 @@ courtSelect.addEventListener(
 
 
         calculatePrice();
+        loadWeekAvailability();
 
     }
 );
@@ -308,10 +501,23 @@ function setMinimumDate() {
 }
 
 
-bookingDate.addEventListener(
-    "change",
-    clearMessage
-);
+bookingDate.addEventListener("change", () => {
+    clearMessage();
+    selectedAvailabilitySlot = "";
+    startTime.value = "";
+    endTime.value = "";
+    if (bookingDate.value) displayedWeekStart = localDateString(startOfWeek(parseLocalDate(bookingDate.value)));
+    loadWeekAvailability();
+});
+
+startTime.addEventListener("change", () => {
+    selectedAvailabilitySlot = startTime.value;
+    renderWeekCalendar();
+});
+endTime.addEventListener("change", () => {
+    selectedAvailabilitySlot = startTime.value;
+    renderWeekCalendar();
+});
 
 
 // ========================================
@@ -688,6 +894,7 @@ async function createBooking() {
 
         startTime.value = "";
         endTime.value = "";
+        selectedAvailabilitySlot = "";
 
 
         durationElement.textContent =

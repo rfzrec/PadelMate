@@ -146,6 +146,45 @@
 
 
 
+                <!-- KALENDER KETERSEDIAAN LAPANGAN: TAMPILAN MINGGUAN -->
+                <section class="availability-section" aria-labelledby="availability-title">
+                    <div class="availability-heading">
+                        <div>
+                            <span class="availability-eyebrow">JADWAL LAPANGAN</span>
+                            <h3 id="availability-title">Kalender Ketersediaan</h3>
+                            <p>Pilih tanggal dan slot hijau yang masih tersedia untuk booking.</p>
+                        </div>
+                    </div>
+
+                    <div class="week-calendar-card">
+                        <div class="month-calendar-toolbar">
+                            <div class="month-title-wrap">
+                                <span class="calendar-icon" aria-hidden="true">▦</span>
+                                <div>
+                                    <h4 id="availability-month-title">Memuat jadwal…</h4>
+                                    <p class="week-subtitle">Jadwal per jam · 08.00–22.00</p>
+                                </div>
+                            </div>
+                            <div class="month-nav">
+                                <button type="button" id="availability-prev-month" aria-label="Minggu sebelumnya">‹</button>
+                                <button type="button" id="availability-today">Hari ini</button>
+                                <button type="button" id="availability-next-month" aria-label="Minggu berikutnya">›</button>
+                            </div>
+                        </div>
+                        <div class="week-calendar-scroll">
+                            <div id="availability-month-grid" class="week-calendar-grid" aria-live="polite">
+                                <p class="availability-placeholder">Pilih court untuk memuat jadwal.</p>
+                            </div>
+                        </div>
+                        <div class="availability-legend" aria-label="Keterangan warna kalender">
+                            <span><i class="legend-dot available-dot"></i>Tersedia</span>
+                            <span><i class="legend-dot booked-dot"></i>Sudah dibooking</span>
+                            <span><i class="legend-dot maintenance-dot"></i>Maintenance</span>
+                        </div>
+                        <p id="availability-message" class="availability-message" role="status"></p>
+                    </div>
+                </section>
+
                 <!-- TIME -->
 
                 <div class="time-row">
