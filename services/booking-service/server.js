@@ -10,6 +10,118 @@ app.use(express.json());
 
 
 // ============================================================
+// PUBLIC COURT AVAILABILITY (untuk kalender booking)
+// Mengembalikan interval booking aktif agar frontend dapat
+// menandai semua slot jam yang bertabrakan, bukan hanya jam mulai.
+// ============================================================
+app.get("/api/bookings/availability", async (req, res) => {
+  try {
+    const courtId = Number(req.query.court_id);
+    const date = String(req.query.date || "");
+
+    if (!Number.isInteger(courtId) || courtId < 1 || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ message: "court_id dan date (YYYY-MM-DD) wajib diisi dengan benar." });
+    }
+
+    const [courtRows] = await db.query(
+      "SELECT id FROM courts WHERE id = ? LIMIT 1",
+      [courtId]
+    );
+    if (courtRows.length === 0) {
+      return res.status(404).json({ message: "Lapangan tidak ditemukan." });
+    }
+
+    const [bookings] = await db.query(
+      `SELECT start_time, end_time, status
+       FROM bookings
+       WHERE court_id = ?
+         AND booking_date = ?
+         AND status != 'cancelled'
+       ORDER BY start_time ASC`,
+      [courtId, date]
+    );
+
+    res.set("Cache-Control", "no-store");
+    res.json({ court_id: courtId, date, bookings });
+  } catch (error) {
+    console.error("Get court availability error:", error);
+    res.status(500).json({ message: "Gagal mengambil ketersediaan lapangan." });
+  }
+});
+
+// ============================================================
+// MONTHLY COURT AVAILABILITY (untuk kalender berwarna)
+// Mengembalikan booking aktif dalam satu bulan agar frontend
+// dapat memberi status tersedia, sebagian terisi, atau penuh.
+// ============================================================
+app.get("/api/bookings/month-availability", async (req, res) => {
+  try {
+    const courtId = Number(req.query.court_id);
+    const month = String(req.query.month || ""); // YYYY-MM
+
+    if (!Number.isInteger(courtId) || courtId < 1 || !/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ message: "court_id dan month (YYYY-MM) wajib diisi dengan benar." });
+    }
+
+    const [courtRows] = await db.query("SELECT id FROM courts WHERE id = ? LIMIT 1", [courtId]);
+    if (courtRows.length === 0) return res.status(404).json({ message: "Lapangan tidak ditemukan." });
+
+    const [bookings] = await db.query(
+      `SELECT booking_date, start_time, end_time, status
+       FROM bookings
+       WHERE court_id = ?
+         AND booking_date >= ?
+         AND booking_date < DATE_ADD(?, INTERVAL 1 MONTH)
+         AND status != 'cancelled'
+       ORDER BY booking_date ASC, start_time ASC`,
+      [courtId, `${month}-01`, `${month}-01`]
+    );
+
+    res.set("Cache-Control", "no-store");
+    res.json({ court_id: courtId, month, bookings });
+  } catch (error) {
+    console.error("Get monthly court availability error:", error);
+    res.status(500).json({ message: "Gagal mengambil kalender ketersediaan lapangan." });
+  }
+});
+
+// ============================================================
+// WEEKLY COURT AVAILABILITY (untuk tampilan kalender mingguan)
+// ============================================================
+app.get("/api/bookings/week-availability", async (req, res) => {
+  try {
+    const courtId = Number(req.query.court_id);
+    const startDate = String(req.query.start_date || "");
+
+    if (!Number.isInteger(courtId) || courtId < 1 || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+      return res.status(400).json({ message: "court_id dan start_date (YYYY-MM-DD) wajib diisi dengan benar." });
+    }
+
+    const [courtRows] = await db.query("SELECT id FROM courts WHERE id = ? LIMIT 1", [courtId]);
+    if (courtRows.length === 0) {
+      return res.status(404).json({ message: "Lapangan tidak ditemukan." });
+    }
+
+    const [bookings] = await db.query(
+      `SELECT booking_date, start_time, end_time, status
+       FROM bookings
+       WHERE court_id = ?
+         AND booking_date >= ?
+         AND booking_date < DATE_ADD(?, INTERVAL 7 DAY)
+         AND status != 'cancelled'
+       ORDER BY booking_date ASC, start_time ASC`,
+      [courtId, startDate, startDate]
+    );
+
+    res.set("Cache-Control", "no-store");
+    res.json({ court_id: courtId, start_date: startDate, bookings });
+  } catch (error) {
+    console.error("Get weekly court availability error:", error);
+    res.status(500).json({ message: "Gagal mengambil jadwal ketersediaan mingguan." });
+  }
+});
+
+// ============================================================
 // GET BOOKINGS (milik user yang login)
 // ============================================================
 app.get("/api/bookings", authRequired, async (req, res) => {
